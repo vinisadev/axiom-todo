@@ -75,8 +75,8 @@ func main() {
 		DB.Find(&todos)
 
 		// Log Axiom event here
-		dataset := os.Getenv("AXIOM_DATASET")
-		_, err := client.IngestEvents(ctx, dataset, []axiom.Event{
+		// dataset := os.Getenv("AXIOM_DATASET")
+		_, err := client.IngestEvents(ctx, "axiom-todo", []axiom.Event{
 			{ingest.TimestampField: time.Now(), "GET": "retrieved todos"},
 		})
 		if err != nil {
