@@ -3,12 +3,14 @@ package main
 import (
 	"os"
 
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
+var AXIOM *axiom.Client
 
 type Todo struct {
 	ID uint `json:"id"`
@@ -25,10 +27,25 @@ func ConnectDB() {
 	DB = db
 }
 
+func CreateAxiomClient() {
+	AXIOM_TOKEN := os.Getenv("AXIOM_TOKEN")
+	AXIOM_ORG_ID := os.Getenv("AXIOM_ORG_ID")
+
+	client, err := axiom.NewClient(
+		axiom.SetPersonalTokenConfig(AXIOM_TOKEN, AXIOM_ORG_ID),
+	)
+	if err != nil {
+		panic("Could not create Axiom client")
+	}
+
+	AXIOM = client
+}
+
 func main() {
 	app := fiber.New()
 
 	ConnectDB()
+	CreateAxiomClient()
 
 	// Migrate the database
 	DB.AutoMigrate(&Todo{})
