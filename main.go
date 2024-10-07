@@ -32,10 +32,12 @@ func ConnectDB() {
 }
 
 func CreateAxiomClient() {
-	// AXIOM_TOKEN := os.Getenv("AXIOM_TOKEN")
-	// AXIOM_ORG_ID := os.Getenv("AXIOM_ORG_ID")
+	AXIOM_TOKEN := os.Getenv("AXIOM_TOKEN")
+	AXIOM_ORG_ID := os.Getenv("AXIOM_ORG_ID")
 
-	client, err := axiom.NewClient()
+	client, err := axiom.NewClient(
+		axiom.SetPersonalTokenConfig(AXIOM_TOKEN, AXIOM_ORG_ID),
+	)
 	if err != nil {
 		panic("Could not create Axiom client")
 	}
