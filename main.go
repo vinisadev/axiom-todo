@@ -37,5 +37,21 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	app.Get("/todos", func(c *fiber.Ctx) error {
+		var todos []Todo
+		DB.Find(&todos)
+		return c.JSON(todos)
+	})
+
+	app.Post("/todos", func(c *fiber.Ctx) error {
+		var todo Todo
+		if err := c.BodyParser(&todo); err != nil {
+			return err
+		}
+
+		DB.Create(&todo)
+		return c.JSON(todo)
+	})
+
 	app.Listen(":3000")
 }
