@@ -10,6 +10,11 @@ import (
 
 var DB *gorm.DB
 
+type Todo struct {
+	ID uint `json:"id"`
+	Title string `json:"title"`
+}
+
 func ConnectDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
