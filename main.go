@@ -44,7 +44,7 @@ func CreateAxiomClient() {
 }
 
 func main() {
-	app := fiber.New()DB_URL
+	app := fiber.New()
 
 	dataset := os.Getenv("AXIOM_DATASET")
 	if dataset == "" {
@@ -53,6 +53,7 @@ func main() {
 
 	ConnectDB()
 	CreateAxiomClient()
+	ctx := context.Background()
 
 	// Migrate the database
 	DB.AutoMigrate(&Todo{})
@@ -66,16 +67,12 @@ func main() {
 		DB.Find(&todos)
 
 		// Log Axiom event here
-		events := []axiom.Event{
-			{ingest.TimestampField: time.Now(), "GET": "read todo list"},
-		}
-		res, err := AXIOM.IngestEvents(context.Background(), dataset, events)
+		dataset := os.Getenv("AXIOM_DATASET")
+		_, err := AXIOM.IngestEvents(ctx, dataset, []axiom.Event{
+			{ingest.TimestampField: time.Now(), "GET": "retrieved todos"},
+		})
 		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, fail := range res.Failures {
-			log.Print(fail.Error)
+			log.Fatalln(err)
 		}
 
 		return c.JSON(todos)
