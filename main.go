@@ -32,9 +32,6 @@ func ConnectDB() {
 }
 
 func CreateAxiomClient() {
-	AXIOM_TOKEN := os.Getenv("AXIOM_TOKEN")
-	AXIOM_ORG_ID := os.Getenv("AXIOM_ORG_ID")
-
 	client, err := axiom.NewClient(
 		axiom.SetPersonalTokenConfig(AXIOM_TOKEN, AXIOM_ORG_ID),
 	)
@@ -48,13 +45,22 @@ func CreateAxiomClient() {
 func main() {
 	app := fiber.New()
 
+	AXIOM_TOKEN := os.Getenv("AXIOM_TOKEN")
+	AXIOM_ORG_ID := os.Getenv("AXIOM_ORG_ID")
+	client, err := axiom.NewClient(
+		axiom.SetPersonalTokenConfig(AXIOM_TOKEN, AXIOM_ORG_ID),
+	)
+	if err != nil {
+		panic("Could not create Axiom client")
+	}
+
 	dataset := os.Getenv("AXIOM_DATASET")
 	if dataset == "" {
 		log.Fatal("AXIOM_DATASET is required")
 	}
 
 	ConnectDB()
-	CreateAxiomClient()
+	// CreateAxiomClient()
 	ctx := context.Background()
 
 	// Migrate the database
@@ -70,7 +76,7 @@ func main() {
 
 		// Log Axiom event here
 		dataset := os.Getenv("AXIOM_DATASET")
-		_, err := AXIOM.IngestEvents(ctx, dataset, []axiom.Event{
+		_, err := client.IngestEvents(ctx, dataset, []axiom.Event{
 			{ingest.TimestampField: time.Now(), "GET": "retrieved todos"},
 		})
 		if err != nil {
