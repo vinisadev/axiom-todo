@@ -30,6 +30,9 @@ func main() {
 
 	ConnectDB()
 
+	// Migrate the database
+	DB.AutoMigrate(&Todo{})
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
