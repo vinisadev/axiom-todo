@@ -48,13 +48,6 @@ func CreateAxiomClient() {
 func main() {
 	app := fiber.New()
 
-	// client, err := axiom.NewClient(
-	// 	axiom.SetPersonalTokenConfig(AXIOM_TOKEN, AXIOM_ORG_ID),
-	// )
-	// if err != nil {
-	// 	panic("Could not create Axiom client")
-	// }
-
 	dataset := os.Getenv("AXIOM_DATASET")
 	if dataset == "" {
 		log.Fatal("AXIOM_DATASET is required")
@@ -76,7 +69,6 @@ func main() {
 		DB.Find(&todos)
 
 		// Log Axiom event here
-		// dataset := os.Getenv("AXIOM_DATASET")
 		_, err := AXIOM.IngestEvents(ctx, dataset, []axiom.Event{
 			{ingest.TimestampField: time.Now(), "GET": "retrieved todos"},
 		})
@@ -94,6 +86,15 @@ func main() {
 		}
 
 		DB.Create(&todo)
+
+		// Log Axiom event here
+		_, err := AXIOM.IngestEvents(ctx, dataset, []axiom.Event{
+			{ingest.TimestampField: time.Now(), "POST": "todo created"},
+		})
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		return c.JSON(todo)
 	})
 
