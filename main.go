@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"log"
 	"os"
+	"time"
 
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/axiomhq/axiom-go/axiom/ingest"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -42,7 +46,12 @@ func CreateAxiomClient() {
 }
 
 func main() {
-	app := fiber.New()
+	app := fiber.New()DB_URL
+
+	dataset := os.Getenv("AXIOM_DATASET")
+	if dataset == "" {
+		log.Fatal("AXIOM_DATASET is required")
+	}
 
 	ConnectDB()
 	CreateAxiomClient()
@@ -57,6 +66,20 @@ func main() {
 	app.Get("/todos", func(c *fiber.Ctx) error {
 		var todos []Todo
 		DB.Find(&todos)
+
+		// Log Axiom event here
+		events := []axiom.Event{
+			{ingest.TimestampField: time.Now(), "GET": "read todo list"},
+		}
+		res, err := AXIOM.IngestEvents(context.Background(), dataset, events)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, fail := range res.Failures {
+			log.Print(fail.Error)
+		}
+		
 		return c.JSON(todos)
 	})
 
